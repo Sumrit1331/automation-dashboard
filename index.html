@@ -50,6 +50,7 @@
   .success { background: #dcfce7; color: #166534; }
   .failure { background: #fee2e2; color: #991b1b; }
   .running { background: #dbeafe; color: #1d4ed8; }
+  .delayed { background: #fef3c7; color: #92400e; }
   .details {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -150,11 +151,12 @@ function render(data = {}) {
         success: "Success",
         failure: "Failed",
         running: "Running",
+        delayed: "Delayed",
         waiting: "Waiting for data"
       }[status] || "Unknown";
 
-      const css = ["success", "failure", "running"].includes(status)
-        ? status : "";
+      const css = ["success", "failure", "running", "delayed"].includes(status)
+  ? status : "";
 
       const url = `https://github.com/${owner}/${p.repo}/actions`;
 
