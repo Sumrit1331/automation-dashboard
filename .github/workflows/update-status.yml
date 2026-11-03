@@ -130,6 +130,18 @@ jobs:
                       "duration": duration,
                   }
 
+          # Detect delayed CEMS monitoring
+          if repo == "gpd-cems-monitor" and runs:
+              last_run_time = runs[0].get("run_started_at")
+              if last_run_time:
+                  age_minutes = (
+                      datetime.now(timezone.utc)
+                      - parse_time(last_run_time)
+                  ).total_seconds() / 60
+
+                  if age_minutes > 15 and item["status"] == "success":
+                      item["status"] = "delayed"
+
               result["projects"][repo] = item
               print(repo, item["status"])
 
