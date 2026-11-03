@@ -1,0 +1,207 @@
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Automation Dashboard</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #f5f7fb;
+    color: #182437;
+    font-family: -apple-system, BlinkMacSystemFont,
+      "Segoe UI", sans-serif;
+  }
+  header {
+    background: white;
+    padding: 24px 6%;
+    border-bottom: 1px solid #e5eaf1;
+  }
+  h1 { margin: 0 0 6px; font-size: 27px; }
+  .muted { color: #738096; font-size: 13px; }
+  main { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .stat, .project {
+    background: white;
+    padding: 22px;
+    border: 1px solid #e5eaf1;
+    border-radius: 15px;
+  }
+  .stat strong { display: block; font-size: 32px; margin-top: 10px; }
+  .projects { display: grid; gap: 15px; }
+  .top { display: flex; justify-content: space-between; gap: 12px; }
+  .project h2 { margin: 0 0 8px; font-size: 18px; }
+  .badge {
+    border-radius: 30px;
+    padding: 6px 12px;
+    background: #edf0f5;
+    color: #596579;
+    font-size: 12px;
+    white-space: nowrap;
+    height: fit-content;
+  }
+  .success { background: #dcfce7; color: #166534; }
+  .failure { background: #fee2e2; color: #991b1b; }
+  .running { background: #dbeafe; color: #1d4ed8; }
+  .details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 20px 0;
+    font-size: 14px;
+  }
+  .details span { display: block; color: #738096; font-size: 12px; }
+  a {
+    display: inline-block;
+    padding: 10px 15px;
+    border: 1px solid #d9e1ee;
+    border-radius: 9px;
+    color: #2563eb;
+    text-decoration: none;
+    font-size: 13px;
+  }
+  button {
+    background: #2563eb;
+    color: white;
+    border: 0;
+    border-radius: 9px;
+    padding: 11px 18px;
+    cursor: pointer;
+  }
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 12px; }
+  @media (max-width: 600px) {
+    .stats { gap: 8px; }
+    .stat, .project { padding: 15px; }
+    .stat strong { font-size: 25px; }
+    h1 { font-size: 23px; }
+    .details { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Automation Dashboard</h1>
+  <div class="muted">GPD & Garmin • GitHub Actions Monitoring</div>
+</header>
+<main>
+  <div class="stats">
+    <div class="stat"><div class="muted">Projects</div><strong id="total">3</strong></div>
+    <div class="stat"><div class="muted">Success</div><strong id="success">—</strong></div>
+    <div class="stat"><div class="muted">Failed</div><strong id="failed">—</strong></div>
+  </div>
+
+  <div class="toolbar">
+    <div>
+      <strong>Project Status</strong>
+      <div id="updated" class="muted">Waiting for data</div>
+    </div>
+    <button onclick="loadStatus()">Refresh</button>
+  </div>
+  <div id="projects" class="projects"></div>
+</main>
+
+<script>
+const repositories = [
+  {
+    name: "GPD CEMS Monitor",
+    description: "CEMS monitoring every 5 minutes",
+    repo: "gpd-cems-monitor"
+  },
+  {
+    name: "Garmin Health LINE Bot",
+    description: "Daily Garmin health reports",
+    repo: "garmin-health-line-bot"
+  },
+  {
+    name: "Garmin Health Charts",
+    description: "Health charts automation",
+    repo: "garmin-health-charts"
+  }
+];
+
+const owner = "Sumrit1331";
+
+function safeText(value) {
+  return String(value ?? "—").replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;",
+    '"': "&quot;", "'": "&#39;"
+  })[c]);
+}
+
+function render(data = {}) {
+  const statuses = data.projects || {};
+  let success = 0, failed = 0;
+
+  document.getElementById("projects").innerHTML =
+    repositories.map(p => {
+      const item = statuses[p.repo] || {};
+      const status = item.status || "waiting";
+      if (status === "success") success++;
+      if (status === "failure") failed++;
+
+      const label = {
+        success: "Success",
+        failure: "Failed",
+        running: "Running",
+        waiting: "Waiting for data"
+      }[status] || "Unknown";
+
+      const css = ["success", "failure", "running"].includes(status)
+        ? status : "";
+
+      const url = `https://github.com/${owner}/${p.repo}/actions`;
+
+      return `
+        <div class="project">
+          <div class="top">
+            <div>
+              <h2>${safeText(p.name)}</h2>
+              <div class="muted">${safeText(p.description)}</div>
+            </div>
+            <span class="badge ${css}">${label}</span>
+          </div>
+          <div class="details">
+            <div><span>Last run</span>${safeText(item.last_run)}</div>
+            <div><span>Duration</span>${safeText(item.duration)}</div>
+          </div>
+          <a href="${url}" target="_blank" rel="noopener">
+            View GitHub Actions
+          </a>
+        </div>
+      `;
+    }).join("");
+
+  document.getElementById("success").textContent =
+    data.projects ? success : "—";
+  document.getElementById("failed").textContent =
+    data.projects ? failed : "—";
+  document.getElementById("updated").textContent =
+    data.updated_at ? "Updated: " + data.updated_at :
+    "Not connected to live data yet";
+}
+
+async function loadStatus() {
+  try {
+    const response = await fetch(
+      "./status.json?t=" + Date.now(),
+      { cache: "no-store" }
+    );
+    if (!response.ok) throw new Error("No status file");
+    render(await response.json());
+  } catch (error) {
+    render();
+  }
+}
+
+loadStatus();
+setInterval(loadStatus, 60000);
+</script>
+</body>
+</html>
