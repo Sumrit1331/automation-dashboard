@@ -1,9 +1,9 @@
 {
-  "updated_at": "06/11/2026 15:43:15",
+  "updated_at": "06/11/2026 16:44:29",
   "projects": {
     "gpd-cems-monitor": {
-      "status": "success",
-      "last_run": "06/11/2026 15:33",
+      "status": "delayed",
+      "last_run": "06/11/2026 16:28",
       "duration": "~0m 17s"
     },
     "garmin-health-line-bot": {
