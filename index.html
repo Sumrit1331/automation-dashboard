@@ -154,6 +154,19 @@ function quotaDetails(quota) {
     " ข้อความ · ตรวจยอด " + date + " น.</span>";
 }
 
+function dailyPushDetails(daily) {
+  const title = "<span>แจ้งเตือน CEMS ที่ส่งทาง LINE วันนี้</span>";
+  const day = new Intl.DateTimeFormat("sv-SE", {timeZone: "Asia/Bangkok"});
+  if (!daily || daily.date !== day.format(new Date()) || !Number.isInteger(daily.sent)) {
+    return title + "รอข้อมูลของวันนี้";
+  }
+  const time = new Intl.DateTimeFormat("th-TH", {timeZone: "Asia/Bangkok", hour: "2-digit", minute: "2-digit"});
+  const start = new Date(daily.since);
+  const from = day.format(start) === daily.date ? time.format(start) : "00:00";
+  return title + "<strong>" + daily.sent.toLocaleString("th-TH") + " ข้อความ</strong>" +
+    "<span>นับตั้งแต่ " + from + " น. · อัปเดต " + time.format(new Date(daily.checked_at)) + " น.</span>";
+}
+
 function render(data = {}) {
   const statuses = data.projects || {};
   let success = 0, failed = 0;
@@ -190,7 +203,7 @@ function render(data = {}) {
           <div class="details">
             <div><span>Last run</span>${safeText(item.last_run)}</div>
             <div><span>Duration</span>${safeText(item.duration)}</div>
-            ${p.repo === "gpd-cems-monitor" ? "<div>" + quotaDetails(data.line_quota) + "</div>" : ""}
+            ${p.repo === "gpd-cems-monitor" ? "<div>" + quotaDetails(data.line_quota) + "</div><div>" + dailyPushDetails(data.daily_line_push) + "</div>" : ""}
           </div>
           <a href="${url}" target="_blank" rel="noopener">
             View GitHub Actions
