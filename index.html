@@ -154,8 +154,8 @@ function quotaDetails(quota) {
     " ข้อความ · ตรวจยอด " + date + " น.</span>";
 }
 
-function dailyPushDetails(daily) {
-  const title = "<span>แจ้งเตือน CEMS ที่ส่งทาง LINE วันนี้</span>";
+function dailyPushDetails(daily, label = "แจ้งเตือน CEMS ที่ส่งทาง LINE วันนี้") {
+  const title = "<span>" + safeText(label) + "</span>";
   const day = new Intl.DateTimeFormat("sv-SE", {timeZone: "Asia/Bangkok"});
   if (!daily || daily.date !== day.format(new Date()) || !Number.isInteger(daily.sent)) {
     return title + "รอข้อมูลของวันนี้";
@@ -204,6 +204,7 @@ function render(data = {}) {
             <div><span>Last run</span>${safeText(item.last_run)}</div>
             <div><span>Duration</span>${safeText(item.duration)}</div>
             ${p.repo === "gpd-cems-monitor" ? "<div>" + quotaDetails(data.line_quota) + "</div><div>" + dailyPushDetails(data.daily_line_push) + "</div>" : ""}
+            ${p.repo === "garmin-health-charts" ? "<div>" + quotaDetails(data.garmin?.quota) + "</div><div>" + dailyPushDetails(data.garmin?.daily, "รายงาน Garmin ที่ส่งทาง LINE วันนี้") + "</div>" : ""}
           </div>
           <a href="${url}" target="_blank" rel="noopener">
             View GitHub Actions
@@ -228,7 +229,14 @@ async function loadStatus() {
       { cache: "no-store" }
     );
     if (!response.ok) throw new Error("No status file");
-    render(await response.json());
+    const data = await response.json();
+    try {
+      const usage = await fetch("/garmin-health-charts/line-usage.json?t=" + Date.now(), {cache: "no-store"});
+      if (usage.ok) data.garmin = await usage.json();
+    } catch {
+      // Project status is available even if the Garmin snapshot is unavailable.
+    }
+    render(data);
   } catch (error) {
     render();
   }
