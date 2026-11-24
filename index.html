@@ -136,6 +136,24 @@ function safeText(value) {
   })[c]);
 }
 
+function quotaDetails(quota) {
+  const title = "<span>โควตา LINE เดือนนี้</span>";
+  if (!quota || !Number.isInteger(quota.used)) return title + "รอข้อมูล";
+  const checked = new Date(quota.checked_at);
+  const month = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Tokyo", year: "numeric", month: "2-digit"
+  });
+  if (!Number.isFinite(checked.getTime()) || month.format(checked) !== month.format(new Date())) {
+    return title + "รอยอดของเดือนใหม่";
+  }
+  const format = n => n.toLocaleString("th-TH");
+  const balance = quota.limit === null ? "ไม่จำกัด" :
+    "เหลือ " + format(Math.max(0, quota.limit - quota.used)) + " จาก " + format(quota.limit) + " ข้อความ";
+  const date = checked.toLocaleString("th-TH", {timeZone: "Asia/Bangkok", dateStyle: "medium", timeStyle: "short"});
+  return title + "<strong>" + balance + "</strong><span>ใช้แล้ว " + format(quota.used) +
+    " ข้อความ · ตรวจยอด " + date + " น.</span>";
+}
+
 function render(data = {}) {
   const statuses = data.projects || {};
   let success = 0, failed = 0;
@@ -172,6 +190,7 @@ function render(data = {}) {
           <div class="details">
             <div><span>Last run</span>${safeText(item.last_run)}</div>
             <div><span>Duration</span>${safeText(item.duration)}</div>
+            ${p.repo === "gpd-cems-monitor" ? "<div>" + quotaDetails(data.line_quota) + "</div>" : ""}
           </div>
           <a href="${url}" target="_blank" rel="noopener">
             View GitHub Actions
