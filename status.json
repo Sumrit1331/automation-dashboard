@@ -1,25 +1,26 @@
 {
-  "updated_at": "24/11/2026 16:14:28",
+  "updated_at": "24/11/2026 17:25:55",
   "projects": {
     "gpd-cems-monitor": {
-      "status": "failure",
-      "last_run": "24/11/2026 15:55",
-      "duration": "~0m 17s"
+      "status": "delayed",
+      "last_run": "24/11/2026 16:56",
+      "duration": "~0m 24s"
     },
     "garmin-health-line-bot": {
       "status": "success",
-      "last_run": "23/11/2026 18:01",
-      "duration": "~1m 17s"
+      "last_run": "24/11/2026 16:42",
+      "duration": "~0m 22s"
     },
     "garmin-health-charts": {
       "status": "success",
-      "last_run": "23/11/2026 18:02",
-      "duration": "~0m 50s"
+      "last_run": "24/11/2026 16:42",
+      "duration": "~0m 41s"
     }
   },
   "line_quota": {
     "limit": 300,
     "used": 300,
     "checked_at": "2026-11-24T16:30:00+07:00"
-  }
+  },
+  "daily_line_push": null
 }
