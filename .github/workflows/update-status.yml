@@ -32,6 +32,7 @@ jobs:
           GH_READ_TOKEN: ${{ secrets.GH_READ_TOKEN }}
         run: |
           python - <<'PY'
+          import base64
           import json
           import os
           import urllib.request
@@ -81,6 +82,15 @@ jobs:
               ).strftime("%d/%m/%Y %H:%M:%S"),
               "projects": {},
           }
+
+          try:
+              source = get_json(f"https://api.github.com/repos/{owner}/gpd-cems-monitor/contents/state.json?ref=cems-state")
+              quota = json.loads(base64.b64decode(source["content"]))["line_quota"]
+              result["line_quota"] = {key: quota[key] for key in ("limit", "used", "checked_at")}
+          except (OSError, ValueError, KeyError, TypeError) as exc:
+              print("Quota snapshot unavailable:", type(exc).__name__)
+              with open("status.json", encoding="utf-8") as previous:
+                  result["line_quota"] = json.load(previous).get("line_quota")
 
           for repo in repos:
               url = (
